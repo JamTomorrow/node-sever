@@ -4,6 +4,8 @@ const api = require(__basename + '/api/api.js')
 // 导入utils, 调用公共方法
 const utils = require(__basename + '/utils/utils.js')
 
+const { Op } = require("sequelize");
+
 let url = config.serverOptions.host;
 if (config.serverOptions.port) {
     url += `:${config.serverOptions.port}`
@@ -813,23 +815,35 @@ class RoutesController {
     // 删除商品
     remove(req, res) {
         // 删除Product、ProductType、UserProduct模型数据
+        const p_id = req.body.p_id.split(',')
+        console.log('p_id ==> ', p_id)
+        // return res.send('remove ok');
         // 开启事务处理
         api.transaction(async (t) => {
-            // 方式一
             // 删除UserProduct模型数据
             await api.removeData('UserProduct', {
-                pId: req.body.p_id,
+                // pId: req.body.p_id,
+                // [Op.in]: [1, 2]  ==>  IN [1, 2]
+                pId: {
+                    [Op.in]: p_id
+                },
                 userId: req.userId
             }, t)
 
             // 删除ProductType模型数据
             await api.removeData('ProductType', {
-                pId: req.body.p_id,
+                // pId: req.body.p_id
+                pId: {
+                    [Op.in]: p_id
+                }
             }, t)
 
             // 删除Product模型数据
             await api.removeData('Product', {
-                pId: req.body.p_id
+                // pId: req.body.p_id
+                pId: {
+                    [Op.in]: p_id
+                }
             }, t)
         }).then((result) => {
             res.send({

@@ -4,7 +4,9 @@ const api = require(__basename + '/api/api.js')
 // 导入utils, 调用公共方法
 const utils = require(__basename + '/utils/utils.js')
 
-const { Op } = require("sequelize");
+const {
+    Op
+} = require("sequelize");
 
 let url = config.serverOptions.host;
 if (config.serverOptions.port) {
@@ -858,6 +860,50 @@ class RoutesController {
         })
     }
 
+    // 查询各分类商品上下架的数量
+    getTypeCount(req, res) {
+        // const sql = "SELECT `pt`.`type_id`, `p`.`status`, COUNT(*) AS `count` FROM `product` AS `p` INNER JOIN `product_type` AS `pt` WHERE `p`.`p_id` = `pt`.`p_id` GROUP BY `pt`.`type_id`, `p`.`status`"
+        // const sql = "SELECT `t`.`id`, COUNT(*) AS `count` FROM (`type` AS `t` INNER JOIN `product_type` AS `pt` ON `t`.`type_id` = `pt`.`type_id`) INNER JOIN `product` AS `p` ON `p`.`p_id` = `pt`.`p_id` AND `p`.`status` = :status GROUP BY `t`.`id`"
+
+        const sql = "SELECT t2.count FROM (SELECT DISTINCT `pt`.`type_id` FROM `type` AS `t` INNER JOIN `product_type` AS `pt` ON `t`.`type_id` = `pt`.`type_id`) AS t1 LEFT JOIN (SELECT DISTINCT `pt`.`type_id`, COUNT(*) AS COUNT FROM `product` AS `p` INNER JOIN `product_type` AS `pt` ON `p`.`p_id` = `pt`.`p_id` AND `p`.`status` = :status GROUP BY `pt`.`type_id`) AS t2 ON t1.type_id = t2.type_id"
+
+        const promise = [api.query(sql, {
+            status: '上架'
+        }), api.query(sql, {
+            status: '下架'
+        })]
+
+        Promise.all(promise).then(result => {
+            // 
+            res.send({
+                msg: '查询商品数目成功',
+                status: 1080,
+                result
+            });
+        }).catch(err => {
+            res.send({
+                msg: '查询商品数目失败',
+                status: 1081
+            });
+        })
+    }
+
+    // 查询各分类商品总数量
+    getTypeAllCount(req, res) {
+        const sql = "SELECT COUNT(*) AS `value`, `t`.`title` AS `name` FROM `type` AS `t` INNER JOIN `product_type` AS `pt` ON `t`.`type_id` = `pt`.`type_id` INNER JOIN `product` AS `p` ON `pt`.`p_id` = `p`.`p_id` GROUP BY `t`.`type_id`"
+        api.query(sql, {}).then(result => {
+            res.send({
+                msg: '查询商品数目成功',
+                status: 1080,
+                result
+            });
+        }).catch(err => {
+            res.send({
+                msg: '查询商品数目失败',
+                status: 1081
+            });
+        })
+    }
 }
 
 // 导出实例

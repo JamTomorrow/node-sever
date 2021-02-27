@@ -50,4 +50,10 @@ module.exports = app => {
 
     // 删除商品
     app.post('/remove', routesController.remove)
+
+    // 查询各分类商品上下架的数量
+    app.get('/getTypeCount', routesController.getTypeCount)
+
+    // 查询各分类商品总数量
+    app.get('/getTypeAllCount', routesController.getTypeAllCount)
 }

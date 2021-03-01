@@ -86,7 +86,9 @@ exports.tokenOptions = {
         '/probyid',
         '/updateProduct',
         '/remove',
+        '/getGoodsNum',
         '/getTypeCount',
-        '/getTypeAllCount'
+        '/getTypeAllCount',
+        '/changeUserInfo'
     ]
 }

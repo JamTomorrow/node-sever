@@ -860,6 +860,26 @@ class RoutesController {
         })
     }
 
+    // 查询当前用户是否有商品数据
+    getGoodsNum(req, res) {
+        const sql = "SELECT COUNT(`up`.`p_id`) as `count` FROM `user_product` AS `up` WHERE `up`.`user_id` = :userId"
+        const userId = req.userId;
+        api.query(sql, {
+            userId
+        }).then(result => {
+            res.send({
+                msg: '查询商品数量成功',
+                status: 1080,
+                result
+            })
+        }).catch(err => {
+            res.send({
+                msg: '查询商品数量失败',
+                status: 1081
+            })
+        })
+    }
+
     // 查询各分类商品上下架的数量
     getTypeCount(req, res) {
         // const sql = "SELECT `pt`.`type_id`, `p`.`status`, COUNT(*) AS `count` FROM `product` AS `p` INNER JOIN `product_type` AS `pt` WHERE `p`.`p_id` = `pt`.`p_id` GROUP BY `pt`.`type_id`, `p`.`status`"
@@ -903,6 +923,62 @@ class RoutesController {
                 status: 1081
             });
         })
+    }
+
+    // 修改个人信息
+    changeUserInfo(req, res) {
+        const userInfo = Object.assign({}, req.body);
+
+        const userId = userInfo.userId;
+        const img = userInfo.avatar;
+        const imgType = userInfo.imgType;
+
+        // 删除不需要的属性
+        delete userInfo.userId;
+        delete userInfo.email;
+        delete userInfo.avatar;
+        delete userInfo.imgType;
+
+        if (imgType) {
+            // 如果存在图片, 先上传图片, 再更新个人信息
+            utils.uploadImg(img, imgType)
+                .then(result => {
+                    userInfo.avatar = result
+                    api.updateData('User', userInfo, {
+                        userId
+                    }).then(result => {
+                        res.send({
+                            msg: '更新个人信息成功',
+                            status: 1090,
+                            result
+                        });
+                    })
+                }).catch(err => {
+                    res.send({
+                        msg: '更新个人信息失败',
+                        status: 1091
+                    });
+                })
+        } else {
+            // 如果没有图片, 直接更新个人信息
+            api.updateData('User', userInfo, {
+                userId
+            }).then(result => {
+                res.send({
+                    msg: '更新个人信息成功',
+                    status: 1090,
+                    result
+                });
+            }).catch(err => {
+                res.send({
+                    msg: '更新个人信息失败',
+                    status: 1091
+                });
+            })
+        }
+
+        console.log('userId ==> ', userId);
+        console.log('userInfo ==> ', userInfo);
     }
 }
 

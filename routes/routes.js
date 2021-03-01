@@ -51,9 +51,15 @@ module.exports = app => {
     // 删除商品
     app.post('/remove', routesController.remove)
 
+    // 查询当前用户是否有商品数据
+    app.get('/getGoodsNum', routesController.getGoodsNum);
+
     // 查询各分类商品上下架的数量
     app.get('/getTypeCount', routesController.getTypeCount)
 
     // 查询各分类商品总数量
     app.get('/getTypeAllCount', routesController.getTypeAllCount)
+
+    // 修改个人信息
+    app.post('/changeUserInfo', routesController.changeUserInfo)
 }
